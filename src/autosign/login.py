@@ -12,8 +12,8 @@ logger = setup_logger("SSOLogin")
 
 class SSOLogin:
     """SSO登录"""
-    BASE_URL = 'https://iclass.buaa.edu.cn:8346/'
-    LOGIN_URL = 'https://sso.buaa.edu.cn/login?service=' + quote(BASE_URL, 'utf-8')
+    BASE_URL = 'https://d.buaa.edu.cn/https-8346/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/'
+    LOGIN_URL = 'https://d.buaa.edu.cn/https/77726476706e69737468656265737421e3e44ed225256951300d8db9d6562d/login?service=https%3A%2F%2Ficlass.buaa.edu.cn%3A8346%2F'
 
     def __init__(self):
         """初始化登录系统"""
