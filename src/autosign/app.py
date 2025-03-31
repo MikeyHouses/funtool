@@ -2,6 +2,7 @@
 Auto sign - 智慧教室自动签到应用程序
 """
 
+from datetime import datetime
 import os
 import json
 import toga
@@ -46,7 +47,7 @@ class AutoSignApp(toga.App):
         self.main_window.content = main_box
         self.main_window.show()
         
-        self.logger.info("请在课程开始后连接校园网使用。")
+        self.logger.info("请在课程开始10分钟前连接校园网使用。")
 
     def setup_logger(self):
         """设置应用程序日志器"""
@@ -273,8 +274,45 @@ class AutoSignApp(toga.App):
                 else:
                     self.logger.error("签到失败！")
             else:
-                self.logger.warning("没有正在进行的课程，请选择要补签的课程时间")
-                self.update_makeup_options()
+                self.logger.info("没有正在进行的课程，尝试查找今天的课程排课...")
+                today_schedules = self.sign_in.get_course_sched_by_date()
+                now = datetime.now()
+
+                course_schedules = [
+                    schedule for schedule in today_schedules
+                    if schedule.get("courseId") == course_id
+                ]
+                
+                if not course_schedules:
+                    self.logger.warning("今天没有该课程的排课安排")
+                    self.logger.warning("没有正在进行的课程，请选择要补签的课程时间")
+                    self.update_makeup_options()
+                    return
+                    
+                signed = False
+                for schedule in course_schedules:
+                    begin_time_str = schedule.get("classBeginTime")
+                    if not begin_time_str:
+                        continue
+                        
+                    begin_time = datetime.strptime(begin_time_str, "%Y-%m-%d %H:%M:%S")
+                    time_diff = (begin_time - now).total_seconds() / 60
+                    
+                    if 0 <= time_diff <= 10:
+                        course_sched_id = schedule.get("id")
+                        self.logger.info(f"发现即将开始的课程，距离开课还有 {time_diff:.1f} 分钟")
+                        
+                        if self.sign_in.perform_sign(course_sched_id):
+                            self.logger.info("提前签到成功！")
+                            signed = True
+                        else:
+                            self.logger.error("提前签到失败！")
+                        break
+                
+                if not signed:
+                    self.logger.warning("没有找到可以提前签到的课程或尚未到签到时间（课前10分钟内）")
+                    self.logger.warning("请选择要补签的课程时间")
+                    self.update_makeup_options()
         except Exception as e:
             self.logger.error(f"签到失败: {e}")
 
