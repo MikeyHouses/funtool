@@ -175,3 +175,50 @@ class IClassSignIn:
         except Exception as e:
             logger.error(f"签到操作发生错误: {e}")
             return False
+        
+    def get_course_sched_by_date(self, date_str=None):
+        """
+        按日期获取课程排课信息
+        
+        Args:
+            date_str (str, optional): 日期字符串，格式为YYYYMMDD。默认为None，表示当天。
+            
+        Returns:
+            list: 当天的课程排课列表，每个元素包含courseSchedId等信息
+            
+        Raises:
+            RuntimeError: 获取排课信息失败
+        """
+        if not self.user_id:
+            self.get_user_info()
+            
+        if date_str is None:
+            date_str = datetime.now().strftime('%Y%m%d')
+            
+        logger.info(f"正在获取日期 {date_str} 的课程排课信息...")
+        try:
+            url = "https://iclass.buaa.edu.cn:8346/app/course/get_stu_course_sched.action"
+            params = {
+                'dateStr': date_str,
+                'id': self.user_id
+            }
+            headers = self.headers.copy()
+            if self.user_info and 'sessionId' in self.user_info:
+                headers['sessionId'] = self.user_info['sessionId']
+                
+            response = self.session.get(url, params=params, headers=headers)
+            response.raise_for_status()
+            
+            json_data = response.json()
+            if json_data.get('STATUS') == '0':
+                courses = json_data.get('result', [])
+                logger.debug(f"获取到的排课信息: {courses}")
+                logger.info(f"成功获取到 {len(courses)} 条排课信息")
+                return courses
+            else:
+                error_msg = json_data.get('ERRMSG', '未知错误')
+                logger.error(f"获取排课信息失败: {error_msg}")
+                return []
+        except Exception as e:
+            logger.error(f"获取日期排课信息时发生错误: {e}")
+            raise RuntimeError(f"获取排课信息失败: {str(e)}") from e
