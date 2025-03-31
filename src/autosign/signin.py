@@ -32,13 +32,13 @@ class IClassSignIn:
             current_url = self.session.get(self.sso_login.BASE_URL).url
             parsed_url = urlparse(current_url)
             login_name = parse_qs(parsed_url.query).get('loginName', [None])[0]
-
+            
             if not login_name:
                 logger.error("无法从URL中提取应用令牌")
                 raise RuntimeError("获取应用令牌失败")
 
             user_info_url = (
-                f"https://iclass.buaa.edu.cn:8346/app/user/login.action?"
+                f"https://d.buaa.edu.cn/https-8346/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/app/user/login.action?"
                 f"phone={login_name}&password=&verificationType=2&"
                 f"verificationUrl=&userLevel=1"
             )
@@ -46,6 +46,7 @@ class IClassSignIn:
             response.raise_for_status()
             response_json = response.json()
             result = response_json.get('result', None)
+            
 
             if result:
                 self.user_info = result
@@ -66,7 +67,7 @@ class IClassSignIn:
         """获取当前学期代码"""
         logger.info("正在获取学期信息...")
         try:
-            url = f"https://iclass.buaa.edu.cn:8346/app/course/get_base_school_year.action?userId={self.user_id}&type=2"
+            url = f"https://d.buaa.edu.cn/https-8346/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/app/course/get_base_school_year.action?userId={self.user_id}&type=2"
             r = self.session.get(url, headers=self.headers)
             r.raise_for_status()
             term_data = r.json()
@@ -87,7 +88,7 @@ class IClassSignIn:
         """获取课程列表"""
         logger.info("正在获取课程列表...")
         try:
-            url = (f"https://iclass.buaa.edu.cn:8346/app/choosecourse/get_myall_course.action?"
+            url = (f"https://d.buaa.edu.cn/https-8346/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/app/choosecourse/get_myall_course.action?"
                    f"user_type=1&id={self.user_id}&xq_code={term_code}")
             r = self.session.get(url, headers=self.headers)
             r.raise_for_status()
@@ -118,7 +119,7 @@ class IClassSignIn:
         """
         logger.info(f"正在获取课程 {course_id} 的排课信息...")
         try:
-            url = f"https://iclass.buaa.edu.cn:8346/app/my/get_my_course_sign_detail.action?id={self.user_id}&courseId={course_id}"
+            url = f"https://d.buaa.edu.cn/https-8346/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/app/my/get_my_course_sign_detail.action?id={self.user_id}&courseId={course_id}"
             r = self.session.post(url, headers=self.headers)
             r.raise_for_status()
             course_data = r.json()
@@ -157,7 +158,7 @@ class IClassSignIn:
         logger.info(f"正在执行签到操作，排课ID: {course_sched_id}...")
         try:
             timestamp = int((time.time() + 5) * 1000)
-            sign_url = (f"http://iclass.buaa.edu.cn:8081/app/course/stu_scan_sign.action?"
+            sign_url = (f"https://d.buaa.edu.cn/http-8081/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/app/course/stu_scan_sign.action?"
                         f"courseSchedId={course_sched_id}&timestamp={timestamp}")
             params = {"id": self.user_id}
             r = self.session.post(sign_url, data=params, headers=self.headers)
@@ -197,7 +198,7 @@ class IClassSignIn:
             
         logger.info(f"正在获取日期 {date_str} 的课程排课信息...")
         try:
-            url = "https://iclass.buaa.edu.cn:8346/app/course/get_stu_course_sched.action"
+            url = "https://d.buaa.edu.cn/https-8346/77726476706e69737468656265737421f9f44d9d342326526b0988e29d51367ba018/app/course/get_stu_course_sched.action"
             params = {
                 'dateStr': date_str,
                 'id': self.user_id
