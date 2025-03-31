@@ -47,7 +47,7 @@ class AutoSignApp(toga.App):
         self.main_window.content = main_box
         self.main_window.show()
         
-        self.logger.info("请在课程开始10分钟前连接校园网使用。")
+        self.logger.info("请在课程开始前10分钟至开始后5分钟内签到。")
 
     def setup_logger(self):
         """设置应用程序日志器"""
